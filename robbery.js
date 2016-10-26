@@ -18,12 +18,12 @@ function getBankSchedule(workingHours) {
 
 function convertToDate(stringDate) {
     var days = { 'ПН': 1, 'ВТ': 2, 'СР': 3, 'ЧТ': 4, 'ПТ': 5, 'СБ': 6, 'ВС': 7 };
-    var re = /^([А-Я]{2}) (.*)(\+\d+)$/;
+    //var re = /^([А-Я]{2}) (.*)(\+\d+)$/;
+    var re = /^([А-Я]{2}) (\d{2}):(\d{2})(\+\d+)$/;
     var parseDate = stringDate.match(re);
-    var date = new Date(Date.parse(days[parseDate[1]] + ' Jan 1900 ' +
-        parseDate[2] + ' GMT' + parseDate[3] + '00'));
-    var currentTimeZone = - date.getTimezoneOffset() / 60;
-    date.setHours(date.getHours() + (BANK_TIME_ZONE - currentTimeZone));
+    var date = new Date(Date.UTC(0, 0, days[parseDate[1]],
+        parseInt(parseDate[2]) - parseInt(parseDate[4]),
+        parseInt(parseDate[3])));
 
     return date;
 }
@@ -116,25 +116,23 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     return {
 
         exists: function () {
-            if (timeForRobbery) {
-                return true;
-            }
-
-            return false;
+            return timeForRobbery !== null;
         },
 
         format: function (template) {
             if (timeForRobbery) {
-                var day = DAYS[timeForRobbery.from.getDay() - 1];
-                var hours = timeForRobbery.from.getHours().toString();
+                timeForRobbery.from.setUTCHours(
+                    timeForRobbery.from.getUTCHours() + BANK_TIME_ZONE
+                );
+                var day = DAYS[timeForRobbery.from.getUTCDay() - 1];
+                var hours = timeForRobbery.from.getUTCHours().toString();
                 if (hours.length === 1) {
                     hours = '0' + hours;
                 }
-                var minutes = timeForRobbery.from.getMinutes().toString();
+                var minutes = timeForRobbery.from.getUTCMinutes().toString();
                 if (minutes.length === 1) {
                     minutes = '0' + minutes;
                 }
-
                 return template
                     .replace('%DD', day)
                     .replace('%HH', hours)
