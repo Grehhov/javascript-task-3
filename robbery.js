@@ -68,6 +68,19 @@ function getNeperesekItem(svTime, zTime) {
     return neperesekItem;
 }
 
+function findFreeTime(schedBank, duration) {
+    var time = null;
+    for (var n = 0; n < schedBank.length; n++) {
+        var min = (schedBank[n].to.getTime() - schedBank[n].from.getTime()) / 60000;
+        if (min >= duration) {
+            time = schedBank[n];
+            break;
+        }
+    }
+
+    return time;
+}
+
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var bankTimeZone = parseInt(workingHours.from.split('+')[1]);
     var sched = convertSchedule(schedule, bankTimeZone);
@@ -80,14 +93,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
         }
         schedBank = neperesek;
     }
-    var time = null;
-    for (var n = 0; n < schedBank.length; n++) {
-        var min = (schedBank[n].to.getTime() - schedBank[n].from.getTime()) / 60000;
-        if (min >= duration) {
-            time = schedBank[n];
-            break;
-        }
-    }
+    var time = findFreeTime(schedBank, duration);
 
     return {
 
