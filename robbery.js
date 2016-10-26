@@ -97,11 +97,12 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
         format: function (template) {
             if (time) {
-                var days = ['ПН', 'ВТ', 'СР'];
-                template = template.replace('%DD', days[time.from.getDay() - 1]);
                 var bankTimeZone = parseInt(workingHours.from.split('+')[1]);
                 var currentTimeZone = - time.from.getTimezoneOffset() / 60;
-                var h = (time.from.getHours() + (bankTimeZone - currentTimeZone)).toString();
+                time.from.setHours(time.from.getHours() + (bankTimeZone - currentTimeZone));
+                var days = ['ПН', 'ВТ', 'СР'];
+                template = template.replace('%DD', days[time.from.getDay() - 1]);
+                var h = time.from.getHours().toString();
                 if (h.length === 1) {
                     h = '0' + h;
                 }
