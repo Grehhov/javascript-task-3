@@ -23,8 +23,8 @@ function convertToDate(stringDate) {
     var re = /^([А-Я]{2}) (.*)(\+\d+)$/;
     var parseDate = stringDate.match(re);
 
-    return new Date(Date.parse(days[parseDate[1]] + ' Jan 1900 '
-        + parseDate[2] + ' GMT' + parseDate[3] + '00'));
+    return new Date(Date.parse(days[parseDate[1]] + ' Jan 1900 ' +
+        parseDate[2] + ' GMT' + parseDate[3] + '00'));
 }
 
 function getSchedBank(workingHours) {
@@ -45,12 +45,12 @@ function getNeperesekItem(svTime, zTime) {
     for (var j = 0; j < zTime.length; j++) {
         if (zTime[j].from.getTime() <= svTime.to.getTime() &&
             zTime[j].from.getTime() >= svTime.from.getTime()) {
-            neperesekItem.push({from: svTime.from, to: zTime[j].from});
+            neperesekItem.push({ from: svTime.from, to: zTime[j].from });
             neperes = false;
         }
         if (zTime[j].to.getTime() <= svTime.to.getTime() &&
             zTime[j].to.getTime() >= svTime.from.getTime()) {
-            neperesekItem.push({from: zTime[j].to, to: svTime.to});
+            neperesekItem.push({ from: zTime[j].to, to: svTime.to });
             neperes = false;
         }
         if (zTime[j].to.getTime() >= svTime.to.getTime() &&
@@ -61,6 +61,7 @@ function getNeperesekItem(svTime, zTime) {
     if (neperes) {
         neperesekItem.push(svTime);
     }
+
     return neperesekItem;
 }
 
@@ -69,11 +70,9 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var schedBank = getSchedBank(workingHours);
     var names = Object.keys(sched);
     for (var j = 0; j < names.length; j++) {
-        var name = names[j];
         var neperesek = [];
         for (var i = 0; i < schedBank.length; i++) {
-            var item = getNeperesekItem(schedBank[i], sched[name]);
-            neperesek = neperesek.concat(item);
+            neperesek = neperesek.concat(getNeperesekItem(schedBank[i], sched[names[j]]));
         }
         schedBank = neperesek;
     }
@@ -85,12 +84,14 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
             break;
         }
     }
+
     return {
 
         exists: function () {
             if (time) {
                 return true;
             }
+
             return false;
         },
 
@@ -113,6 +114,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
                 return template;
             }
+
             return '';
         },
 
