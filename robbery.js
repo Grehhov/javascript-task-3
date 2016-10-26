@@ -134,6 +134,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
                 if (minutes.length === 1) {
                     minutes = '0' + minutes;
                 }
+
                 return template
                     .replace('%DD', day)
                     .replace('%HH', hours)
