@@ -18,7 +18,6 @@ function getBankSchedule(workingHours) {
 
 function convertToDate(stringDate) {
     var days = { 'ПН': 1, 'ВТ': 2, 'СР': 3, 'ЧТ': 4, 'ПТ': 5, 'СБ': 6, 'ВС': 7 };
-    //var re = /^([А-Я]{2}) (.*)(\+\d+)$/;
     var re = /^([А-Я]{2}) (\d{2}):(\d{2})(\+\d+)$/;
     var parseDate = stringDate.match(re);
     var date = new Date(Date.UTC(0, 0, days[parseDate[1]],
@@ -133,6 +132,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
                 if (minutes.length === 1) {
                     minutes = '0' + minutes;
                 }
+
                 return template
                     .replace('%DD', day)
                     .replace('%HH', hours)
