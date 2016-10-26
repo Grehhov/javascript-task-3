@@ -2,15 +2,15 @@
 
 exports.isStar = false;
 
-function convertSchedule(schedule) {
+function convertSchedule(schedule, bankTimeZone) {
     var res = {};
     var names = Object.keys(schedule);
     for (var i = 0; i < names.length; i++) {
         var name = names[i];
         res[name] = [];
         for (var j = 0; j < schedule[name].length; j++) {
-            var from = convertToDate(schedule[name][j].from);
-            var to = convertToDate(schedule[name][j].to);
+            var from = convertToDate(schedule[name][j].from, bankTimeZone);
+            var to = convertToDate(schedule[name][j].to, bankTimeZone);
             res[name].push({ from: from, to: to });
         }
     }
@@ -18,21 +18,24 @@ function convertSchedule(schedule) {
     return res;
 }
 
-function convertToDate(stringDate) {
+function convertToDate(stringDate, bankTimeZone) {
     var days = { 'ПН': 1, 'ВТ': 2, 'СР': 3, 'ЧТ': 4, 'ПТ': 5, 'СБ': 6, 'ВС': 7 };
     var re = /^([А-Я]{2}) (.*)(\+\d+)$/;
     var parseDate = stringDate.match(re);
-
-    return new Date(Date.parse(days[parseDate[1]] + ' Jan 1900 ' +
+    var date = new Date(Date.parse(days[parseDate[1]] + ' Jan 1900 ' +
         parseDate[2] + ' GMT' + parseDate[3] + '00'));
+    var currentTimeZone = - date.getTimezoneOffset() / 60;
+    date.setHours(date.getHours() + (bankTimeZone - currentTimeZone));
+
+    return date;
 }
 
-function getSchedBank(workingHours) {
+function getSchedBank(workingHours, bankTimeZone) {
     var daysOfWorkBank = ['ПН', 'ВТ', 'СР'];
     var sched = [];
     for (var i = 0; i < daysOfWorkBank.length; i++) {
-        var from = convertToDate(daysOfWorkBank[i] + ' ' + workingHours.from);
-        var to = convertToDate(daysOfWorkBank[i] + ' ' + workingHours.to);
+        var from = convertToDate(daysOfWorkBank[i] + ' ' + workingHours.from, bankTimeZone);
+        var to = convertToDate(daysOfWorkBank[i] + ' ' + workingHours.to, bankTimeZone);
         sched.push({ from: from, to: to });
     }
 
@@ -66,8 +69,9 @@ function getNeperesekItem(svTime, zTime) {
 }
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
-    var sched = convertSchedule(schedule);
-    var schedBank = getSchedBank(workingHours);
+    var bankTimeZone = parseInt(workingHours.from.split('+')[1]);
+    var sched = convertSchedule(schedule, bankTimeZone);
+    var schedBank = getSchedBank(workingHours, bankTimeZone);
     var names = Object.keys(sched);
     for (var j = 0; j < names.length; j++) {
         var neperesek = [];
@@ -97,9 +101,6 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
         format: function (template) {
             if (time) {
-                var bankTimeZone = parseInt(workingHours.from.split('+')[1]);
-                var currentTimeZone = - time.from.getTimezoneOffset() / 60;
-                time.from.setHours(time.from.getHours() + (bankTimeZone - currentTimeZone));
                 var days = ['ПН', 'ВТ', 'СР'];
                 template = template.replace('%DD', days[time.from.getDay() - 1]);
                 var h = time.from.getHours().toString();
